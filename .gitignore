@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+.env/
+.env.*
+.env
+
+#vscode
+.vscode/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Database / Migrations
+alembic/versions/*.py
+!alembic/versions/.gitkeep
+
+# Redis dumps
+dump.rdb
+
+# Build / Deploy
+dist/
+build/
+*.egg-info/
+
+# Vercel
+.vercel/
