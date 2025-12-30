@@ -8,5 +8,5 @@ app = FastAPI(title = "Stryker MVP API")
 def health():
     return {"status":"ok"}
 
-app.include_router(matches.router, prefix="/api/v1")
+app.include_router(matches.router)
 
