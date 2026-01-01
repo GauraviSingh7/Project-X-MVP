@@ -30,3 +30,11 @@ async def get_live_match(match_id: int):
     raw = await get_raw_live_match(match_id)
     return normalize_live_match(raw)
 
+from app.infrastructure.external_api import sportmonks_api
+
+@router.get("/debug/fixtures-raw")
+async def debug_fixtures():
+    """Temporary route to inspect raw SportMonks fixture data"""
+    raw_data = await sportmonks_api.fetch_fixtures_raw()
+    return raw_data
+

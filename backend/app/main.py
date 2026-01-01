@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from app.core import logging
-from app.api.routes import matches
+from app.api.routes import matches, schedules
 from app.services.live_snapshot_service import poll_and_store_live_matches
+from app.infrastructure.db import SessionLocal
+from app.services.schedule_service import sync_schedules_to_db
 
 import asyncio
 import logging
@@ -15,16 +17,28 @@ def health():
     return {"status":"ok"}
 
 app.include_router(matches.router)
-@app.on_event("startup")
-async def start_live_polling():
-    async def poller():
-        while True:
-            try:
-                await poll_and_store_live_matches()
-            except Exception:
-                pass
-            await asyncio.sleep(15)  # poll interval
+app.include_router(schedules.router)
 
-    asyncio.create_task(poller())
+@app.on_event("startup")
+async def startup_event():
+    async def start_live_polling():
+        async def poller():
+            while True:
+                try:
+                    await poll_and_store_live_matches()
+                except Exception:
+                    pass
+                await asyncio.sleep(15)
+        asyncio.create_task(poller())
+    asyncio.create_task(start_live_polling())
+    
+    db = SessionLocal()
+    try:
+        await sync_schedules_to_db(db)
+    finally:
+        db.close()
+
+
+
 
 

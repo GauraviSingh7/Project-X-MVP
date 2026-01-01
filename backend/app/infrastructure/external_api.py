@@ -1,5 +1,6 @@
 import httpx
 from app.core.config import settings
+from datetime import datetime, timedelta
 
 class SportMonksAPI:
     def __init__(self):
@@ -43,5 +44,25 @@ class SportMonksAPI:
             response = await client.get(url, params=params)
             response.raise_for_status()
             return response.json()
+
+    async def fetch_fixtures_raw(self) -> dict:
+            today = datetime.now().date()
+            start_date = today - timedelta(days=7)
+            end_date = today + timedelta(days=30)
+            
+            date_range = f"{start_date},{end_date}"
+
+            url = f"{self.base_url}/fixtures"
+            params = {
+                "api_token": self.api_token,
+                "include": "localteam,visitorteam,venue,league",
+                "sort": "starting_at",
+                "filter[starts_between]": date_range,
+            }
+            
+            async with httpx.AsyncClient(timeout=15) as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
 
 sportmonks_api = SportMonksAPI()
