@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 async def poll_and_store_live_matches():
     raw_wrapper = await get_raw_live_matches()
+    if not raw_wrapper or "data" not in raw_wrapper:
+        logger.warning("No live match data received")
+        redis_client.delete("live:matches")
+        return
     matches = raw_wrapper.get("data", [])
     
     live_match_ids = []

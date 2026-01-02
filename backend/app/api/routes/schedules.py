@@ -8,7 +8,7 @@ from app.models.sql_match import Match
 
 router = APIRouter(prefix="/api/v1/schedules", tags=["schedules"])
 
-@router.get("/")
+@router.get("")
 def get_schedules(
     db: Session = Depends(get_db),
     date_from: Optional[date] = None,

@@ -4,13 +4,26 @@ from app.api.routes import matches, schedules
 from app.services.live_snapshot_service import poll_and_store_live_matches
 from app.infrastructure.db import SessionLocal
 from app.services.schedule_service import sync_schedules_to_db
-
+import os
 import asyncio
 import logging
 
 logging.basicConfig(level = logging.INFO)
+origins = os.getenv("CORS_ORIGINS","").split(',')
 
-app = FastAPI(title = "Stryker MVP API")
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title = "Stryker MVP API",
+    redirect_slashes=True)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def health():
