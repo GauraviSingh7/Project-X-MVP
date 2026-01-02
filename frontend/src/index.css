@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* STRYKER Design System - Premium Cricket Platform */
+    
+    /* Core Background Colors */
+    --background: 40 33% 98%;
+    --foreground: 220 25% 14%;
+    
+    /* Card & Surface */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 14%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 14%;
+    
+    /* Primary - Deep Slate Navy (Trust & Premium) */
+    --primary: 220 30% 18%;
+    --primary-foreground: 40 33% 98%;
+    
+    /* Secondary - Warm Gray */
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 220 25% 14%;
+    
+    /* Muted - Subtle backgrounds */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+    
+    /* Accent - Cricket Field Green */
+    --accent: 145 45% 32%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Highlight - Premium Gold */
+    --highlight: 42 87% 55%;
+    --highlight-foreground: 220 25% 14%;
+    
+    /* Status Colors */
+    --live: 0 72% 51%;
+    --live-foreground: 0 0% 100%;
+    
+    --upcoming: 220 14% 46%;
+    --finished: 145 45% 32%;
+    
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Border & Input */
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 220 30% 18%;
+    
+    --radius: 0.5rem;
+    
+    /* Sidebar (if needed) */
+    --sidebar-background: 220 25% 14%;
+    --sidebar-foreground: 40 33% 98%;
+    --sidebar-primary: 145 45% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 25% 20%;
+    --sidebar-accent-foreground: 40 33% 98%;
+    --sidebar-border: 220 25% 22%;
+    --sidebar-ring: 145 45% 32%;
+    
+    /* Typography */
+    --font-display: 'Libre Baskerville', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    
+    /* Shadows */
+    --shadow-card: 0 1px 3px 0 hsl(220 25% 14% / 0.04), 0 1px 2px -1px hsl(220 25% 14% / 0.04);
+    --shadow-elevated: 0 4px 6px -1px hsl(220 25% 14% / 0.05), 0 2px 4px -2px hsl(220 25% 14% / 0.05);
+    --shadow-overlay: 0 10px 15px -3px hsl(220 25% 14% / 0.08), 0 4px 6px -4px hsl(220 25% 14% / 0.08);
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 40 33% 98%;
+    
+    --card: 220 25% 14%;
+    --card-foreground: 40 33% 98%;
+    
+    --popover: 220 25% 14%;
+    --popover-foreground: 40 33% 98%;
+    
+    --primary: 40 33% 98%;
+    --primary-foreground: 220 25% 14%;
+    
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 40 33% 98%;
+    
+    --muted: 220 25% 16%;
+    --muted-foreground: 220 14% 60%;
+    
+    --accent: 145 45% 40%;
+    --accent-foreground: 0 0% 100%;
+    
+    --highlight: 42 87% 55%;
+    --highlight-foreground: 220 25% 14%;
+    
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 40 33% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
+  }
+  
+  /* Live pulse indicator */
+  .live-pulse {
+    @apply relative;
+  }
+  
+  .live-pulse::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-live animate-ping opacity-75;
+  }
+  
+  /* Card hover effect - subtle */
+  .card-hover {
+    @apply transition-shadow duration-200;
+  }
+  
+  .card-hover:hover {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  /* Status badges */
+  .status-live {
+    @apply bg-live text-live-foreground;
+  }
+  
+  .status-upcoming {
+    @apply bg-muted text-muted-foreground;
+  }
+  
+  .status-finished {
+    @apply bg-accent/10 text-accent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .container-content {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
