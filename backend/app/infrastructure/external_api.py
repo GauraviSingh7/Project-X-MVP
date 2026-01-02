@@ -64,5 +64,19 @@ class SportMonksAPI:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
                 return response.json()
+    
+    async def fetch_match_details_rich(self, match_id: str) -> dict:
+        """
+        Fetches FULL match details using the allowed includes for your plan.
+        """
+        url = f"{self.base_url}/fixtures/{match_id}"
+        params = {
+            "api_token": self.api_token,
+            "include": "localteam,visitorteam,venue,runs,batting,bowling,lineup,tosswon,firstumpire,secondumpire,tvumpire,referee,manofmatch",
+        }
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
 
 sportmonks_api = SportMonksAPI()
