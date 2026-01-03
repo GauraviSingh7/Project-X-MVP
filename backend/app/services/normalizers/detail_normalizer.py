@@ -3,7 +3,16 @@ from app.domain.models.match_detail import (
 )
 
 def normalize_match_detail(raw: dict) -> MatchDetail:
-    data = raw.get("data", raw) 
+    data = raw.get("data", raw)
+    #Build Team lookup map
+    teams_map = {} 
+    if data.get("localteam"):
+        lt = data.get("localteam")
+        teams_map[lt.get("id")] = lt.get("name")
+        
+    if data.get("visitorteam"):
+        vt = data.get("visitorteam")
+        teams_map[vt.get("id")] = vt.get("name")
     #Build Player Lookup Map
     player_map = {}
     home_id = data.get("localteam_id")
@@ -35,9 +44,12 @@ def normalize_match_detail(raw: dict) -> MatchDetail:
     #Helper to get/create inning
     def get_inning(scoreboard_id, team_id):
         if scoreboard_id not in innings_map:
+            t_name = teams_map.get(team_id, "Unknown Team")
+
             innings_map[scoreboard_id] = InningScorecard(
                 inning_number=int(scoreboard_id.replace("S", "")) if "S" in scoreboard_id else 1,
                 team_id=team_id,
+                team_name =t_name,
                 score="0/0", 
                 overs="0.0",
                 batting=[], 

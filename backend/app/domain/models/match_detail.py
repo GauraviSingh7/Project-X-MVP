@@ -31,6 +31,7 @@ class BowlerStats(BaseModel):
 class InningScorecard(BaseModel):
     inning_number: int
     team_id: int
+    team_name: str
     score: str # e.g. "150/3"
     overs: str
     batting: List[BatsmanStats]
