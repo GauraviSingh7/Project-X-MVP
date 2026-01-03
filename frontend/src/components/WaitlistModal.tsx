@@ -22,7 +22,7 @@ export default function WaitlistModal({ open, onOpenChange }: WaitlistModalProps
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/waitlist/`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/waitlist`,
         {
           method: "POST",
           headers: {
