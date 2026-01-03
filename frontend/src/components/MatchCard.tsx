@@ -8,6 +8,20 @@ interface MatchCardProps {
   variant?: "compact" | "full";
 }
 
+/**
+ * Centralised routing logic based on match status
+ */
+function getMatchLink(matchId: string | number, status?: string) {
+  const s = status?.toLowerCase();
+
+  if (s === "live") return `/match/${matchId}/live`;
+  if (s === "finished") return `/match/${matchId}/result`;
+  if (s === "ns" || s === "upcoming") return `/match/${matchId}/schedule`;
+
+  // safe fallback
+  return `/match/${matchId}/live`;
+}
+
 export default function MatchCard({ match, variant = "full" }: MatchCardProps) {
   // Treat everything except NS / FINISHED as LIVE
   const statusLower = match.status?.toLowerCase() ?? "";
@@ -19,7 +33,7 @@ export default function MatchCard({ match, variant = "full" }: MatchCardProps) {
 
   return (
     <Link
-      to={`/match/${matchId}`}
+      to={getMatchLink(matchId, match.status)}
       className={cn(
         "block bg-card rounded-lg border border-border card-hover overflow-hidden",
         variant === "compact" ? "p-4" : "p-5"
