@@ -110,3 +110,32 @@ export function useScorecard(matchId: number | undefined) {
     enabled: typeof matchId === "number",
   });
 }
+
+export function useMatchDetail(matchId?: number) {
+  return useQuery({
+    queryKey: ["match-detail", matchId],
+    enabled: typeof matchId === "number",
+    queryFn: async () => {
+      const res = await api.get(
+        `/api/v1/matches/${matchId}`
+      );
+
+      return res.data; // full finished match object
+    },
+  });
+}
+
+export function useMatchTeams(matchId: number | undefined) {
+  return useQuery({
+    queryKey: ["match-teams", matchId],
+    queryFn: async () => {
+      if (!matchId) return null;
+      const res = await api.get("/api/v1/matches");
+      const match = res.data.matches.find(
+        (m: any) => String(m.match_id) === String(matchId)
+      );
+      return match?.teams ?? null;
+    },
+    enabled: !!matchId,
+  });
+}

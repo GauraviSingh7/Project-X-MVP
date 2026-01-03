@@ -17,8 +17,8 @@ export default function Schedule() {
 
     const now = new Date();
 
-    // ✅ Filter out old finished matches
-    const visibleMatches = matches.filter(match => {
+    // Filter visible matches
+    const visibleMatches = matches.filter((match) => {
       const matchDate = new Date(match.start_time);
 
       // Upcoming
@@ -45,7 +45,7 @@ export default function Schedule() {
     );
 
     const groups: Record<string, ScheduleMatch[]> = {};
-    sorted.forEach(match => {
+    sorted.forEach((match) => {
       const dateKey = formatScheduleDate(match.start_time);
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(match);
@@ -91,8 +91,11 @@ export default function Schedule() {
                 </h2>
 
                 <div className="space-y-3">
-                  {dayMatches.map(match => (
-                    <ScheduleRow key={match.match_id} match={match} />
+                  {dayMatches.map((match) => (
+                    <ScheduleRow
+                      key={match.match_id ?? match.id}
+                      match={match}
+                    />
                   ))}
                 </div>
               </div>
@@ -116,7 +119,7 @@ function ScheduleRow({ match }: { match: ScheduleMatch }) {
 
   return (
     <Link
-      to={`/match/${match.match_id}`}
+      to={`/match/${match.match_id}/schedule`}
       className="flex items-center gap-4 p-4 bg-card border rounded-lg card-hover"
     >
       {/* Time */}
