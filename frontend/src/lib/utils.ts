@@ -8,9 +8,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Format time for US timezones
-export function formatMatchTime(isoString: string, timezone: string = 'America/New_York'): string {
-  const date = parseISO(isoString);
-  return formatInTimeZone(date, timezone, 'MMM d, h:mm a zzz');
+export function formatMatchTime(dateInput?: string | Date) {
+  if (!dateInput) return "—";
+
+  // Normalize to string
+  const dateString =
+    typeof dateInput === "string"
+      ? dateInput
+      : dateInput.toISOString();
+
+  const [date, time] = dateString.split("T");
+  const [hour, minute] = time.split(":");
+
+  return `${date} ${hour}:${minute}`;
 }
 
 // Format relative time (e.g., "5 minutes ago")

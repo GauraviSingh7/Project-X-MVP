@@ -9,31 +9,38 @@ interface MatchCardProps {
 }
 
 /**
- * Centralised routing logic based on match status
+ * Canonical routing logic
+ * LIVE      -> /match/:id        (rich detail view)
+ * FINISHED  -> /match/:id/result
+ * UPCOMING  -> /match/:id/schedule
  */
-function getMatchLink(matchId: string | number, status?: string) {
-  const s = status?.toLowerCase();
+function getMatchLink(match: Match) {
+  const status = match.status?.toLowerCase() ?? "";
+  const matchId = match.match_id ?? match.id;
 
-  if (s === "live") return `/match/${matchId}/live`;
-  if (s === "finished") return `/match/${matchId}/result`;
-  if (s === "ns" || s === "upcoming") return `/match/${matchId}/schedule`;
+  if (!matchId) return "#";
 
-  // safe fallback
-  return `/match/${matchId}/live`;
+  if (status === "finished") {
+    return `/match/${matchId}/result`;
+  }
+
+  if (status === "ns" || status === "upcoming") {
+    return `/match/${matchId}/schedule`;
+  }
+
+  // LIVE match → rich detail page
+  return `/match/${matchId}`;
 }
 
 export default function MatchCard({ match, variant = "full" }: MatchCardProps) {
-  // Treat everything except NS / FINISHED as LIVE
   const statusLower = match.status?.toLowerCase() ?? "";
-  const isUpcoming = statusLower === "ns";
+  const isUpcoming = statusLower === "ns" || statusLower === "upcoming";
   const isFinished = statusLower === "finished";
   const isLive = !isUpcoming && !isFinished;
 
-  const matchId = match.match_id ?? match.id;
-
   return (
     <Link
-      to={getMatchLink(matchId, match.status)}
+      to={getMatchLink(match)}
       className={cn(
         "block bg-card rounded-lg border border-border card-hover overflow-hidden",
         variant === "compact" ? "p-4" : "p-5"

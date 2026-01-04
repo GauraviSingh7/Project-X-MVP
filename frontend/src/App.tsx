@@ -54,6 +54,10 @@ const App = () => (
 
               {/* Match detail pages */}
               <Route
+                path="match/:matchId"
+                element={<LiveMatchDetail />}
+              />
+              <Route
                 path="match/:matchId/live"
                 element={<LiveMatchDetail />}
               />

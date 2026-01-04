@@ -41,6 +41,9 @@ export function useSchedules() {
 
 /* ---------------- SINGLE MATCH ---------------- */
 
+/**
+ * Hook for basic live match info (normalized data)
+ */
 export function useLiveMatch(matchId: number | undefined) {
   return useQuery<LiveMatch>({
     queryKey: ["live-match", matchId],
@@ -49,10 +52,13 @@ export function useLiveMatch(matchId: number | undefined) {
       return res.data; 
     },
     enabled: typeof matchId === "number",
-    refetchInterval: 10_000,
+    refetchInterval: 5_000, // Updated to 5s for consistency with detail page
   });
 }
 
+/**
+ * General purpose match hook
+ */
 export function useMatch(matchId: number | undefined, options?: { refetchInterval?: number }) {
   const { data: schedules } = useSchedules();
   const { data: liveMatch } = useLiveMatch(matchId);
@@ -100,14 +106,25 @@ export function useScorecard(matchId: number | undefined) {
   });
 }
 
-export function useMatchDetail(matchId?: number) {
+/**
+ * RICH DETAIL HOOK - Use this for LiveMatchDetail.tsx
+ * Calls the endpoint: /api/v1/matches/{match_id}
+ */
+export function useMatchDetail(matchId?: number, options?: { refetchInterval?: number }) {
   return useQuery({
     queryKey: ["match-detail", matchId],
     enabled: typeof matchId === "number",
     queryFn: async () => {
       const res = await api.get(`/api/v1/matches/${matchId}`);
+      console.log(
+        "[FRONTEND] /matches/:id response",
+        matchId,
+        res.data
+      );
       return res.data; 
     },
+    // Setting default to 5 seconds to solve the "no data" and "Venue TBC" issues
+    refetchInterval: options?.refetchInterval ?? 5_000, 
   });
 }
 

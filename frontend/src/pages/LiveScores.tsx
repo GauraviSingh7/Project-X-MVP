@@ -1,6 +1,10 @@
 import { Helmet } from "react-helmet-async";
-import { useSchedules } from "@/hooks/use-cricket-data";
+import {
+  useSchedules,
+  useLiveMatches,
+} from "@/hooks/use-cricket-data";
 import MatchCard from "@/components/MatchCard";
+import LiveMatchCard from "@/components/LiveMatchCard";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -10,15 +14,8 @@ import { useState } from "react";
 
 type FilterStatus = "ALL" | "LIVE" | "UPCOMING" | "FINISHED";
 
-/**
- * Status mapping rule:
- * - NS -> UPCOMING
- * - Finished -> FINISHED
- * - everything else -> LIVE
- */
 function mapStatus(status: string): FilterStatus {
   const s = status.toLowerCase();
-
   if (s === "ns") return "UPCOMING";
   if (s === "finished") return "FINISHED";
   return "LIVE";
@@ -27,16 +24,40 @@ function mapStatus(status: string): FilterStatus {
 export default function LiveScores() {
   const [filter, setFilter] = useState<FilterStatus>("ALL");
 
-  const { data: matches, isLoading, error, refetch } = useSchedules();
+  const {
+    data: scheduleMatches,
+    isLoading,
+    error,
+    refetch,
+  } = useSchedules();
 
-  const filteredMatches =
-    matches?.filter((m) => {
-      if (filter === "ALL") return true;
-      return mapStatus(m.status) === filter;
-    }) || [];
+  const { data: liveMatches } = useLiveMatches();
 
-  const liveCount =
-    matches?.filter((m) => mapStatus(m.status) === "LIVE").length || 0;
+  // ✅ REMOVE overlap: drop live matches from schedules
+  const liveIds = new Set(
+    (liveMatches || []).map((m) => m.match_id)
+  );
+
+  const scheduleOnlyMatches =
+    scheduleMatches?.filter(
+      (m) => !liveIds.has(m.match_id)
+    ) || [];
+
+  const filteredMatches = (() => {
+    if (filter === "LIVE") return liveMatches || [];
+
+    if (filter === "ALL")
+      return [
+        ...(liveMatches || []),
+        ...scheduleOnlyMatches,
+      ];
+
+    return scheduleOnlyMatches.filter(
+      (m) => mapStatus(m.status) === filter
+    );
+  })();
+
+  const liveCount = liveMatches?.length || 0;
 
   return (
     <>
@@ -53,7 +74,9 @@ export default function LiveScores() {
         <div className="container-content">
           <div className="flex items-center gap-3 mb-2">
             <Radio className="h-6 w-6" />
-            <h1 className="font-display text-3xl font-bold">Live Scores</h1>
+            <h1 className="font-display text-3xl font-bold">
+              Live Scores
+            </h1>
             {liveCount > 0 && (
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-live text-live-foreground text-sm font-medium animate-pulse-subtle">
                 {liveCount} LIVE
@@ -124,9 +147,19 @@ export default function LiveScores() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMatches.map((match) => (
-              <MatchCard key={match.match_id} match={match} />
-            ))}
+            {filteredMatches.map((match) =>
+              "batting_team" in match ? (
+                <LiveMatchCard
+                  key={match.match_id}
+                  match={match}
+                />
+              ) : (
+                <MatchCard
+                  key={match.match_id}
+                  match={match}
+                />
+              )
+            )}
           </div>
         )}
       </div>

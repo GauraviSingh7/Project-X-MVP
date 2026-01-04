@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useLiveMatches, useNews, useDiscussions } from "@/hooks/use-cricket-data";
+import LiveMatchCard from "@/components/LiveMatchCard";
 import MatchCard from "@/components/MatchCard";
 import NewsCard from "@/components/NewsCard";
 import DiscussionCard from "@/components/DiscussionCard";
@@ -8,13 +9,26 @@ import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { Radio, Newspaper, MessageCircle, TrendingUp } from "lucide-react";
 
+/**
+ * Standardized helper to determine if a match is live based on its status.
+ * Captures various in-progress states used by the data provider.
+ */
+function isMatchLive(status: string): boolean {
+  const s = status?.toLowerCase() ?? "";
+  return s !== "ns" && s !== "upcoming" && s !== "finished";
+}
+
 export default function Home() {
   const { data: matches, isLoading: matchesLoading, error: matchesError, refetch: refetchMatches } = useLiveMatches();
   const { data: news, isLoading: newsLoading, error: newsError, refetch: refetchNews } = useNews();
   const { data: discussions, isLoading: discussionsLoading, error: discussionsError, refetch: refetchDiscussions } = useDiscussions();
 
-  const liveMatches = matches?.filter(m => m.status === "LIVE") || [];
-  const upcomingMatches = matches?.filter(m => m.status === "UPCOMING").slice(0, 2) || [];
+  // Updated filtering logic to use the standardized live check
+  const liveMatches = matches?.filter(m => isMatchLive(m.status)) || [];
+  const upcomingMatches = matches?.filter(m => {
+    const s = m.status?.toLowerCase();
+    return s === "ns" || s === "upcoming";
+  }).slice(0, 2) || [];
 
   return (
     <>
@@ -68,8 +82,8 @@ export default function Home() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {liveMatches.map(match => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
+                  <LiveMatchCard key={match.match_id} match={match} />
+                ))}
                 </div>
               )}
             </section>
@@ -83,7 +97,8 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {upcomingMatches.map(match => (
-                    <MatchCard key={match.id} match={match} />
+                    /* Added unique string prefix to key */
+                    <MatchCard key={`upcoming-${match.match_id ?? match.id}`} match={match} />
                   ))}
                 </div>
               </section>
