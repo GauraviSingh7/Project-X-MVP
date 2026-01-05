@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from datetime import date
 from sqlalchemy import cast, String
@@ -45,8 +46,7 @@ from fastapi import Header, HTTPException
 from app.services.schedule_service import sync_schedules_to_db
 from app.core.config import settings
 
-CRON_SECRET = "super_secret_cron_key_123"
-@router.post("/sync")
+@router.get("/sync")
 async def trigger_schedule_sync(
     authorization: str = Header(None),
     db: Session = Depends(get_db)
@@ -55,11 +55,12 @@ async def trigger_schedule_sync(
     Protected endpoint to trigger fixture sync.
     Only Vercel Cron (or you) can call this.
     """
+    cron_secret = os.getenv("CRON_SECRET")
     if not authorization:
         raise HTTPException(status_code=401, detail="Missing auth header")
     
     token = authorization.replace("Bearer ", "")
-    if token != CRON_SECRET:
+    if not cron_secret or token != cron_secret:
         raise HTTPException(status_code=403, detail="Invalid cron token")
 
     await sync_schedules_to_db(db)
