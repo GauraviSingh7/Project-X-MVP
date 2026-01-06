@@ -151,9 +151,9 @@ export default function ResultMatchDetail() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-12 mb-20">
-        <Link to="/live" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.4em] text-slate-900 hover:translate-x-[-4px] transition-transform mb-12">
+        {/* <Link to="/live" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.4em] text-slate-900 hover:translate-x-[-4px] transition-transform mb-12">
           <ArrowLeft className="h-5 w-5" /> Back to matches
-        </Link>
+        </Link> */}
 
         {/* HERO SCOREBOARD SECTION */}
         <div className="flex flex-col items-center mb-24 pb-12 border-b-2 border-slate-200/50">

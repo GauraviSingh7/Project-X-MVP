@@ -68,13 +68,13 @@ export default function ScheduleDetail() {
         <div className="relative z-10 w-full pt-20 pb-12">
           <div className="container-content">
             {/* Back */}
-            <Link
+            {/* <Link
               to="/schedule"
              className="inline-flex items-center gap-2 text-xs font-bold text-black/50 hover:text-black mb-16 -mt-4"
             >
               <ArrowLeft className="h-4 w-4 stroke-[3]" />
               BACK TO SCHEDULE
-            </Link>
+            </Link> */}
 
             {/* Teams */}
             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-8 mb-10">
