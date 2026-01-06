@@ -35,8 +35,11 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
             "group-data-[scrolled=true]:text-muted-foreground group-data-[scrolled=true]:hover:text-foreground",
 
             // Active states
-            isActive &&
-              "group-data-[scrolled=true]:text-foreground text-white",
+            isActive && [
+              "group-data-[scrolled=true]:text-foreground",
+              "text-white",
+              activeClassName
+            ],
             isPending && pendingClassName,
 
             className
