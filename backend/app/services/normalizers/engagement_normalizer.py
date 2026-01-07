@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 import logging
+import re
 
 from app.domain.models.engagement import (
     EngagementPostDomain, 
@@ -10,6 +11,54 @@ from app.domain.models.engagement import (
 )
 
 logger = logging.getLogger(__name__)
+
+# --- FILTERING CONSTANTS ---
+BLACKLIST_KEYWORDS = {
+    "surgery", "plastic", "body", "butt", "lipo", "cosmetic", # BBL Surgery noise
+    "whatsapp", "betting id", "casino", "jackpot", "teen patti", # Betting spam
+    "prize", "giveaway", "follow me", "dm for", "promoted" # Low signal
+}
+
+CRICKET_CONTEXT_WORDS = {
+    # 1. Generic Cricket Terms
+    "cricket", "match", "run", "wicket", "ball", "six", "four", "century", 
+    "inning", "over", "highlight", "score", "team", "vs", "league", 
+    "batting", "bowling", "fielding", "stumps", "win", "loss", "play", "game",
+    "sport", "tournament", "cup", "trophy", "final", "champion", "highlights",
+    
+    # 2. Specific League/Team Tags (Self-validating)
+    # These match the tokens generated from hashtags like #MajorLeagueCricket
+    "majorleaguecricket", "usacricket", "bigbashleague", "t20cricket", 
+    "teamusa", "americancricket", "mlc2025", "ipl", "bbl15", "bbl2025"
+    
+    # NOTE: We intentionally DO NOT include "bbl" here. 
+    # Tweets with ONLY "bbl" must match a generic term (like "match") to pass.
+}
+
+def is_valid_content(text: str) -> bool:
+    """
+    Returns True only if content is:
+    1. Clean (No blacklist words)
+    2. Relevant (Has cricket context)
+    """
+    if not text:
+        return False
+        
+    text_lower = text.lower()
+    
+    # 1. Check Blacklist
+    if any(word in text_lower for word in BLACKLIST_KEYWORDS):
+        return False
+        
+    # 2. Check Context (At least one cricket keyword must be present)
+    # We tokenize by non-alphanumeric to match whole words
+    tokens = set(re.split(r'\W+', text_lower))
+    if not tokens.intersection(CRICKET_CONTEXT_WORDS):
+        # Edge case: If the text is VERY short, it might just be a hashtag like "#BigBash".
+        # We reject these as "Low Signal" anyway. We want analysis/commentary.
+        return False
+
+    return True
 
 def normalize_twitter_response(raw_data: Dict[str, Any]) -> List[EngagementPostDomain]:
     """
@@ -36,6 +85,10 @@ def normalize_twitter_response(raw_data: Dict[str, Any]) -> List[EngagementPostD
             content = entry.get("content", {})
             item_content = content.get("content", {}) # Yes, it's nested content.content
             tweet_results = item_content.get("tweet_results", {}).get("result", {})
+
+            text = details.get("full_text") or legacy.get("full_text") or ""
+            if not is_valid_content(text):
+                continue
             
             if not tweet_results or tweet_results.get("__typename") == "TweetUnavailable":
                 continue
@@ -121,6 +174,13 @@ def normalize_youtube_response(raw_data: Dict[str, Any]) -> List[EngagementPostD
             
             published_str = snippet.get("publishedAt")
             published_at = datetime.fromisoformat(published_str.replace("Z", "+00:00")) if published_str else datetime.now()
+
+            title = snippet.get("title", "")
+            description = snippet.get("description", "")
+            full_text = f"{title} {description}"
+
+            if not is_valid_content(full_text):
+                continue
 
             # Media (Thumbnails)
             thumbnails = snippet.get("thumbnails", {})

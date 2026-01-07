@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class SocialAPI:
     def __init__(self):
-        #Timeouts: YouTube is fast, Twitter241 can be slow/flakey
+        # Timeouts: YouTube is fast, Twitter241 can be slow/flakey
         self.timeout = httpx.Timeout(30.0, connect=10.0)
 
     async def fetch_twitter_search(self, query: str, count: int = 20) -> Dict[str, Any]:
@@ -15,11 +15,14 @@ class SocialAPI:
         Fetches tweets from Twitter241 (RapidAPI).
         """
         url = f"https://{settings.TWITTER_HOST}/search-v3"
+        
+        # CHANGED: Use the raw query. We rely on Python-side filtering for language/spam.
         params = {
             "type": "Latest",
             "count": str(count),
-            "query": query
+            "query": query 
         }
+        
         headers = {
             "x-rapidapi-key": settings.RAPID_API_KEY,
             "x-rapidapi-host": settings.TWITTER_HOST
@@ -45,7 +48,8 @@ class SocialAPI:
             "type": "video",
             "maxResults": str(max_results),
             "key": settings.YOUTUBE_API_KEY,
-            "regionCode": "US" #Prioritize US content
+            "regionCode": "US", 
+            "relevanceLanguage": "en" 
         }
 
         try:
