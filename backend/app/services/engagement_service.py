@@ -18,9 +18,7 @@ async def fetch_and_store_engagement(db: Session, platform: str):
     
     # 1. Fetch & Normalize
     if platform == "twitter":
-        # CHANGED: Simplified Query. 
-        # Removed complex brackets and boolean exclusion logic (-betting etc).
-        # We now rely on 'engagement_normalizer.py' to filter junk.
+        # Simplified Query to be compatible with RapidAPI wrapper
         query = "#MajorLeagueCricket OR #USACricket OR #BigBashLeague OR #T20Cricket"
         
         raw_data = await social_api.fetch_twitter_search(query, count=20)
