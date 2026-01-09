@@ -39,4 +39,5 @@ export const endpoints = {
 
   // NEW — unified ticker endpoint
   liveScores: "/api/v1/matches/livescore",
+  engagementFeed: "/api/v1/engagement/feed",
 };

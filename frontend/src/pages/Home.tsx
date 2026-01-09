@@ -1,10 +1,18 @@
 // frontend/src/pages/Home.tsx
 
 import { Helmet } from "react-helmet-async";
-import { useLiveScores, useNews, useDiscussions } from "@/hooks/use-cricket-data";
+import {
+  useLiveScores,
+  useNews,
+  useDiscussions,
+  useInfiniteEngagementFeed,
+} from "@/hooks/use-cricket-data";
+
 import FeaturedMatchCard from "@/components/FeaturedMatchCard";
 import NewsCard from "@/components/NewsCard";
-import DiscussionCard from "@/components/DiscussionCard";
+import TweetCard from "@/components/TweetCard";
+import YouTubeEmbedCard from "@/components/YouTubeEmbedCard";
+import DiscussionsTicker from "@/components/DiscussionsTicker";
 import WaitlistCard from "@/components/WaitlistCard";
 import AboutUsCard from "@/components/AboutUsCard";
 import TickerCard from "@/components/TickerCard";
@@ -12,7 +20,7 @@ import TickerCard from "@/components/TickerCard";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
-import { Radio, Newspaper, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Radio, Newspaper, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useMemo } from "react";
 import type { LiveScoreMatch } from "@/lib/types";
 import { cn, getTeamLogoUrl, formatMatchTime } from "@/lib/utils";
@@ -27,8 +35,41 @@ export default function Home() {
     refetch: refetchScores 
   } = useLiveScores({ refetchInterval: 30000 });
   
-  const { data: news, isLoading: newsLoading, error: newsError, refetch: refetchNews } = useNews();
-  const { data: discussions, isLoading: discussionsLoading, error: discussionsError, refetch: refetchDiscussions } = useDiscussions();
+  const { data: news, isLoading: newsLoading, error: newsError } = useNews();
+  const { data: discussions } = useDiscussions();
+  
+  // Engagement feed - Twitter posts only
+  const {
+    data: twitterPages,
+    isLoading: engagementLoading,
+    error: engagementError,
+  } = useInfiniteEngagementFeed({
+    source: "twitter",
+    limit: 20,
+  });
+
+  const twitterPosts = useMemo(
+  () => twitterPages?.pages.flatMap(page => page.data) ?? [],
+  [twitterPages]
+  );
+
+  console.log("Twitter Pages:", twitterPages);
+  console.log("Twitter Posts:", twitterPosts);
+  console.log("Engagement Loading:", engagementLoading);
+  console.log("Engagement Error:", engagementError);
+
+  // YouTube
+  const {
+    data: youtubePages,
+  } = useInfiniteEngagementFeed({
+    source: "youtube",
+    limit: 5,
+  });
+
+  const featuredYouTubeVideo = useMemo(
+    () => youtubePages?.pages[0]?.data[0],
+    [youtubePages]
+  );
 
   const tickerMatches = useMemo(() => {
     return Array.isArray(liveScoresData) ? liveScoresData : [];
@@ -49,6 +90,26 @@ export default function Home() {
     
     return featured.slice(0, 3);
   }, [liveScoresData]);
+
+
+  const discussionsList = useMemo(() => {
+    if (!discussions || discussions.length === 0) return [];
+
+    return discussions.slice(0, 10).map((d: any) => ({
+      id: d.id,
+      title: d.title || "Untitled Discussion",
+      preview: d.content || "No preview available",
+
+      // ✅ FIX: ensure author is a string
+      author:
+        typeof d.author === "string"
+          ? d.author
+          : d.author?.name ?? "Anonymous",
+
+      replies: d.replies || 0,
+      timestamp: d.timestamp || new Date().toISOString(),
+    }));
+  }, [discussions]);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -72,9 +133,8 @@ export default function Home() {
         />
       </Helmet>
 
-      {/* Hero Section - Full Bleed with layers */}
+      {/* ========== 1. HERO SECTION (UNCHANGED) ========== */}
       <section className="relative h-[100vh] min-h-[700px] w-full overflow-hidden">
-        {/* Layer 1: Background Image */}
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=2000&q=80"
@@ -83,10 +143,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Layer 2: Gradient Overlay */}
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/70 via-black/50 to-background/95" />
 
-        {/* Layer 3: Match Ticker */}
         {tickerMatches.length > 0 && (
           <div className="absolute top-20 left-0 right-0 z-30 py-6">
             <div className="container-content">
@@ -132,7 +190,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Layer 4: Hero Content */}
         <div className="absolute inset-0 z-20 flex items-center">
           <div className="container-content">
             <div className="max-w-4xl mt-32">
@@ -148,119 +205,166 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* ========== 2. FEATURED MATCH + NEWS SECTION ========== */}
       <div className="relative bg-background">
         <div className="container-content py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
-            {/* Left Column - 70% */}
-            <div className="lg:col-span-7 space-y-12">
-              {/* Featured Matches Section */}
-              <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <Radio className="h-6 w-6 text-live" />
-                  <h2 className="font-display text-2xl font-bold text-foreground">
-                    Featured Matches
-                  </h2>
-                </div>
-
-                {scoresLoading ? (
-                  <LoadingState message="Loading matches..." />
-                ) : scoresError ? (
-                  <ErrorState
-                    message="Unable to load matches"
-                    onRetry={() => refetchScores()}
-                  />
-                ) : featuredMatches.length === 0 ? (
-                  <EmptyState
-                    title="No matches available"
-                    message="Check back later for live matches."
-                  />
-                ) : (
-                  <div className="space-y-4">
-                    {featuredMatches.map((match: LiveScoreMatch) => (
-                      <FeaturedMatchCard
-                        key={`featured-${match.match_id}`}
-                        match={match}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* Fan Discussions Section */}
-              <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <MessageCircle className="h-6 w-6 text-accent" />
-                  <h2 className="font-display text-2xl font-bold text-foreground">
-                    Fan Discussions
-                  </h2>
-                </div>
-
-                {discussionsLoading ? (
-                  <LoadingState message="Loading discussions..." />
-                ) : discussionsError ? (
-                  <ErrorState onRetry={() => refetchDiscussions()} />
-                ) : !discussions || discussions.length === 0 ? (
-                  <EmptyState
-                    title="No discussions yet"
-                    message="Be the first to start a conversation."
-                  />
-                ) : (
-                  <div className="space-y-4">
-                    {discussions.slice(0, 5).map((post) => (
-                      <DiscussionCard key={post.id} post={post} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            </div>
-
-            {/* Right Column - 30% */}
-            <aside className="lg:col-span-3">
-              <div className="lg:sticky lg:top-24">
-                <section>
-                  <div className="flex items-center gap-2 mb-6">
-                    <Newspaper className="h-6 w-6 text-accent" />
-                    <h2 className="font-display text-xl font-bold text-foreground">
-                      Top Stories
-                    </h2>
-                  </div>
-
-                  {newsLoading ? (
-                    <LoadingState message="Loading news..." />
-                  ) : newsError ? (
-                    <ErrorState onRetry={() => refetchNews()} />
-                  ) : !news || news.length === 0 ? (
-                    <EmptyState
-                      title="No news available"
-                      message="Check back later for updates."
-                    />
-                  ) : (
-                    <div className="space-y-4">
-                      {news.slice(0, 6).map((item) => (
-                        <NewsCard
-                          key={item.id}
-                          news={item}
-                          variant="compact"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </section>
+          <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8">
+            {/* Left 50% - Featured Match Carousel */}
+            <section>
+              <div className="flex items-center gap-2 mb-6">
+                <Radio className="h-6 w-6 text-live" />
+                <h2 className="font-display text-2xl font-bold text-foreground">
+                  Featured Match
+                </h2>
               </div>
-            </aside>
+
+              {scoresLoading ? (
+                <LoadingState message="Loading featured match..." />
+              ) : scoresError ? (
+                <ErrorState
+                  message="Unable to load match"
+                  onRetry={() => refetchScores()}
+                />
+              ) : featuredMatches.length === 0 ? (
+                <EmptyState
+                  title="No matches available"
+                  message="Check back later for live matches."
+                />
+              ) : (
+                <div className="space-y-4">
+                  {featuredMatches.map((match) => (
+                    <FeaturedMatchCard 
+                      key={match.match_id} 
+                      match={match} 
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Right 50% - News Panel */}
+            <section>
+              <div className="flex items-center gap-2 mb-6">
+                <Newspaper className="h-6 w-6 text-accent" />
+                <h2 className="font-display text-2xl font-bold text-foreground">
+                  Top Stories
+                </h2>
+              </div>
+
+              {newsLoading ? (
+                <LoadingState message="Loading news..." />
+              ) : newsError ? (
+                <ErrorState onRetry={() => {}} />
+              ) : !news || news.length === 0 ? (
+                <EmptyState
+                  title="No news available"
+                  message="Check back later for updates."
+                />
+              ) : (
+                <div className="space-y-4 h-[600px] overflow-y-auto pr-2">
+                  {news.slice(0, 6).map((item) => (
+                    <NewsCard
+                      key={item.id}
+                      news={item}
+                      variant="compact"
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         </div>
       </div>
 
-      {/* Waitlist Section */}
+
+
+      {/* ========== 3. ENGAGEMENT FEED SECTION ========== */}
+      <section className="bg-muted py-16">
+        <div className="container-content">
+          <div className="flex items-center gap-2 mb-8">
+            <Sparkles className="h-6 w-6 text-accent" />
+            <h2 className="font-display text-3xl font-bold text-foreground">
+              Cricket Buzz
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left 50% - Twitter Feed */}
+            <div>
+              <h3 className="font-semibold text-lg mb-4 text-foreground">
+                Latest from X (Twitter)
+              </h3>
+              
+              {engagementLoading ? (
+                <LoadingState message="Loading tweets..." />
+              ) : engagementError ? (
+                <ErrorState message="Unable to load tweets" />
+              ) : twitterPosts.length === 0 ? (
+                <EmptyState
+                  title="No tweets available"
+                  message="Check back later for cricket buzz."
+                />
+              ) : (
+                <div 
+                  className="space-y-4 overflow-y-auto pr-2" 
+                  style={{ maxHeight: "70vh" }}
+                >
+                  {twitterPosts.map((post) => (
+                    <TweetCard key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right 50% - YouTube Video */}
+            <div>
+              <h3 className="font-semibold text-lg mb-4 text-foreground">
+                Featured Video
+              </h3>
+              
+              {!featuredYouTubeVideo ? (
+                <EmptyState
+                  title="No video available"
+                  message="Check back later for highlights."
+                />
+              ) : (
+                <YouTubeEmbedCard post={featuredYouTubeVideo} />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========== 4. DISCUSSIONS TICKER ========== */}
+      <section className="py-16 bg-background">
+        <div className="container-content">
+          <div className="flex items-center gap-2 mb-8">
+            <MessageCircle className="h-6 w-6 text-accent" />
+            <h2 className="font-display text-3xl font-bold text-foreground">
+              Fan Discussions
+            </h2>
+          </div>
+
+          {discussionsList.length === 0 ? (
+            <EmptyState
+              title="No discussions yet"
+              message="Be the first to start a conversation."
+            />
+          ) : (
+            <DiscussionsTicker discussions={discussionsList} />
+          )}
+        </div>
+      </section>
+
+
+      {/* ========== 5. WAITLIST SECTION (UNCHANGED) ========== */}
       <section id="waitlist" className="bg-muted py-16">
         <div className="container-content">
           <WaitlistCard />
         </div>
       </section>
 
-      {/* About Us Section */}
+      {/* ========== 6. ABOUT US SECTION (UNCHANGED) ========== */}
       <section className="py-16">
         <div className="container-content">
           <AboutUsCard />

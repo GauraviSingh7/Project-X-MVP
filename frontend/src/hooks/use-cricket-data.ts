@@ -1,8 +1,9 @@
 // Custom hooks for data fetching - backend-aligned (NO adapters)
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { ScheduleMatch, LiveMatch } from "@/lib/types";
+import { endpoints } from "@/lib/api/endpoints";
 import {
   fetchMockNews,
   fetchMockDiscussions,
@@ -156,5 +157,89 @@ export function useLiveScores(options?: { refetchInterval?: number }) {
       return res.data;
     },
     refetchInterval: options?.refetchInterval ?? 30000,
+  });
+}
+
+export interface EngagementMedia {
+  type: string;
+  url: string;
+}
+
+export interface EngagementAuthor {
+  name: string;
+  handle?: string;
+  avatar?: string;
+}
+
+export interface EngagementMetrics {
+  likes: number;
+  shares: number;
+  views?: number;
+}
+
+export interface EngagementPost {
+  id: string;
+  source: "twitter" | "youtube";
+  source_id: string;
+  title?: string;
+  text?: string;
+  url: string;
+  media: EngagementMedia[];
+  author: EngagementAuthor;
+  metrics: EngagementMetrics;
+  published_at: string;
+}
+
+export interface EngagementFeedResponse {
+  data: EngagementPost[];
+  pagination: {
+    next_cursor?: string | null;
+  };
+}
+
+export async function fetchEngagementFeed(params?: {
+  source?: "twitter" | "youtube";
+  limit?: number;
+  cursor?: string;
+}) {
+  return api.get<EngagementFeedResponse>(endpoints.engagementFeed, {
+    params,
+  });
+}
+
+export function useEngagementFeed(params?: {
+  source?: "twitter" | "youtube";
+  limit?: number;
+  cursor?: string;
+}) {
+  const { source, limit, cursor } = params ?? {};
+
+  return useQuery({
+    queryKey: ["engagement-feed", source ?? "all", limit ?? 20, cursor ?? null],
+    queryFn: () =>
+      fetchEngagementFeed({ source, limit, cursor }).then(res => res.data),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useInfiniteEngagementFeed(params?: {
+  source?: "twitter" | "youtube";
+  limit?: number;
+}) {
+  const { source, limit } = params ?? {};
+
+  return useInfiniteQuery({
+    queryKey: ["engagement-feed-infinite", source ?? "all", limit ?? 20],
+    queryFn: ({ pageParam }) =>
+      fetchEngagementFeed({
+        source,
+        limit,
+        cursor: pageParam,
+      }).then(res => res.data),
+
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination?.next_cursor ?? undefined,
+
+    initialPageParam: undefined as string | undefined,
   });
 }
