@@ -23,8 +23,12 @@ export default function DiscussionCard({ post }: DiscussionCardProps) {
           )}
         </div>
         <div>
-          <p className="text-sm font-medium text-foreground">{post.author.name}</p>
-          <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
+          <p className="text-sm font-medium text-foreground">
+            {post.author.name}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatRelativeTime(post.createdAt)}
+          </p>
         </div>
       </div>
 
@@ -35,12 +39,14 @@ export default function DiscussionCard({ post }: DiscussionCardProps) {
       <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border">
         <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ThumbsUp className="h-4 w-4" />
-          <span>{formatNumber(post.likes)}</span>
+          <span>{formatNumber(post.likes ?? 0)}</span>
         </button>
+
         <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <MessageCircle className="h-4 w-4" />
-          <span>{post.replies} replies</span>
+          <span>{post.replies ?? 0} replies</span>
         </button>
+
         <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <Share2 className="h-4 w-4" />
           <span>Share</span>

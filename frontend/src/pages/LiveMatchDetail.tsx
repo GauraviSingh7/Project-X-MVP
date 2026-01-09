@@ -4,7 +4,7 @@ import {
   useMatchDetail,
   useCommentary,
   useDiscussions,
-  useLiveMatches
+  useLiveScores
 } from "@/hooks/use-cricket-data";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
@@ -31,8 +31,7 @@ export default function LiveMatchDetail() {
   const { data: match, isLoading, error, refetch } =
     useMatchDetail(matchIdNum);
 
-  const { data: liveMatches } = useLiveMatches();
-
+  const { data: liveScores } = useLiveScores();
 
   const { data: commentary } = useCommentary(
     activeTab === "commentary" ? matchIdNum : undefined
@@ -59,59 +58,52 @@ export default function LiveMatchDetail() {
   const scorecard = match.scorecard ?? [];
   const richInning = scorecard[scorecard.length - 1];
 
-  let battingTeamName = richInning?.team_name;
-  let opponentTeamName = "Opponent";
-
-  const battingTeamId = richInning?.team_id;
-
-  // 🔑 Pull matching live match (from /live endpoint)
-  const liveMatch = liveMatches?.find(
-    (m: any) => (m.match_id ?? m.id) === matchIdNum
+  // 🔑 Find matching live match from /livescore endpoint
+  const liveScoreMatch = liveScores?.find(
+    (m: any) => String(m.match_id) === String(matchIdNum)
   );
 
-  /**
-   * CASE 1: Both teams have batted
-   * → scorecard is source of truth
-   */
-  if (scorecard.length > 1 && battingTeamId) {
-    const opponentInning = scorecard.find(
-      inning => inning.team_id !== battingTeamId
-    );
+  let battingTeamName = "Team A";
+  let opponentTeamName = "Team B";
 
-    if (opponentInning?.team_name) {
-      opponentTeamName = opponentInning.team_name;
+  /**
+   * PRIMARY: Use /livescore as source of truth for team names
+   * This works for ALL match states (LIVE, DELAYED, NS, FINISHED)
+   */
+  if (liveScoreMatch?.teams) {
+    battingTeamName = liveScoreMatch.teams.batting_first?.name ?? battingTeamName;
+    opponentTeamName = liveScoreMatch.teams.batting_second?.name ?? opponentTeamName;
+  }
+
+  /**
+   * FALLBACK: If /livescore unavailable, use scorecard team names
+   * This handles edge cases where match might not be in livescore feed
+   */
+  else if (richInning?.team_name) {
+    const battingTeamId = richInning.team_id;
+    battingTeamName = richInning.team_name;
+
+    // Try to find opponent from scorecard
+    if (scorecard.length > 1) {
+      const opponentInning = scorecard.find(
+        inning => inning.team_id !== battingTeamId
+      );
+      if (opponentInning?.team_name) {
+        opponentTeamName = opponentInning.team_name;
+      }
     }
   }
 
-  /**
-   * CASE 2: Only one innings (live / innings break)
-   * → use /live batting_team & bowling_team (same as LiveMatchCard)
-   */
-  else if (
-    liveMatch?.batting_team &&
-    liveMatch?.bowling_team &&
-    battingTeamId
-  ) {
-    const battingTeam =
-      battingTeamId === liveMatch.batting_team.id
-        ? liveMatch.batting_team
-        : liveMatch.bowling_team;
-
-    const bowlingTeam =
-      battingTeam.id === liveMatch.batting_team.id
-        ? liveMatch.bowling_team
-        : liveMatch.batting_team;
-
-    battingTeamName = battingTeam?.name ?? battingTeamName;
-    opponentTeamName = bowlingTeam?.name ?? opponentTeamName;
-  }
-
+  const battingTeamId = richInning?.team_id;
   const opponentInning = scorecard.find(
     inning => inning.team_id !== battingTeamId
   );
 
   const venue = match.venue;
-  const toss = match.toss;
+  const toss =
+    liveScoreMatch?.toss ??
+    match.toss ??
+    null;
 
   const pageTitle = `${battingTeamName ?? "Match"} | STRYKER`;
 
@@ -184,15 +176,19 @@ export default function LiveMatchDetail() {
               Updated: {formatMatchTime(match.updated_at)}
             </span>
 
-            {toss && (
-              <p className="text-sm italic opacity-90">
-                Toss:{" "}
-                {toss.won_by_team_id === battingTeamId
-                  ? battingTeamName
-                  : opponentTeamName}{" "}
-                won and elected to {toss.elected}
-              </p>
-            )}
+            <p className="text-sm italic opacity-90">
+              Toss:{" "}
+              {toss ? (
+                <>
+                  {toss.won_by_team_id === battingTeamId
+                    ? battingTeamName
+                    : opponentTeamName}{" "}
+                  won and elected to {toss.elected}
+                </>
+              ) : (
+                "--"
+              )}
+            </p>
 
             <div className="flex gap-4">
               <button className="flex items-center gap-2 px-4 py-2 bg-primary-foreground/10 rounded-md">
