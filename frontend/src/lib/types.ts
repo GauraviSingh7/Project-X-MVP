@@ -138,6 +138,18 @@ export interface MatchEvent {
   over: number;
 }
 
+export interface NewsArticle {
+  id: number;
+  headline: string;
+  intro?: string | null;
+  context?: string | null;
+  story_type?: string | null;
+  published_at: string; // ISO string
+  match_id?: string | null;
+  image_id?: string | null;
+  image_url?: string | null;
+}
+
 /* ---------- Mock Data Types (Keep for Phase 1) ---------- */
 
 export interface CommentaryBall {

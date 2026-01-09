@@ -73,6 +73,7 @@ export default function Navbar({
             <NavLink to="/live">Live Scores</NavLink>
             <NavLink to="/schedule">Schedule</NavLink>
             <NavLink to="/buzz"> Feed</NavLink>
+            <NavLink to="/news"> News</NavLink>
 
             <button
               onClick={handleWaitlistClick}
@@ -150,6 +151,19 @@ export default function Navbar({
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Feed
+              </NavLink>
+
+              <NavLink
+                to="/news"
+                className={cn(
+                  "px-4 py-3 rounded-lg transition-colors font-medium",
+                  variant === "hero" && !isScrolled
+                    ? "text-white hover:bg-white/10"
+                    : "text-foreground hover:bg-muted"
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                News
               </NavLink>
 
               <div className="pt-2 px-1">

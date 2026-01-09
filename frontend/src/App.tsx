@@ -14,6 +14,7 @@ import LiveMatchDetail from "./pages/LiveMatchDetail";
 import ResultMatchDetail from "./pages/ResultMatchDetail";
 import ScheduleDetail from "./pages/ScheduleDetail";
 import Firehose from "./pages/Firehose";
+import News from "./pages/News";
 
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="live" element={<LiveScores />} />
               <Route path="schedule" element={<Schedule />} />
               <Route path="buzz" element={<Firehose />} />
+              <Route path="news" element={<News />} />
 
               {/* Match detail pages */}
               <Route

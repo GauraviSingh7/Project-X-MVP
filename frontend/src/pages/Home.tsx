@@ -35,7 +35,12 @@ export default function Home() {
     refetch: refetchScores 
   } = useLiveScores({ refetchInterval: 30000 });
   
-  const { data: news, isLoading: newsLoading, error: newsError } = useNews();
+  const {
+    data: news,
+    isLoading: newsLoading,
+    error: newsError,
+    refetch: refetchNews,
+  } = useNews();  
   const { data: discussions } = useDiscussions();
   
   // Engagement feed - Twitter posts only
@@ -254,8 +259,8 @@ export default function Home() {
               {newsLoading ? (
                 <LoadingState message="Loading news..." />
               ) : newsError ? (
-                <ErrorState onRetry={() => {}} />
-              ) : !news || news.length === 0 ? (
+                <ErrorState onRetry={refetchNews} />
+              ) : !Array.isArray(news) || news.length === 0 ? (
                 <EmptyState
                   title="No news available"
                   message="Check back later for updates."
@@ -266,7 +271,6 @@ export default function Home() {
                     <NewsCard
                       key={item.id}
                       news={item}
-                      variant="compact"
                     />
                   ))}
                 </div>
