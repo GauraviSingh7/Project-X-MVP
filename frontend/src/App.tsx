@@ -15,6 +15,7 @@ import ResultMatchDetail from "./pages/ResultMatchDetail";
 import ScheduleDetail from "./pages/ScheduleDetail";
 import Firehose from "./pages/Firehose";
 import News from "./pages/News";
+import DiscussionsPage from "./pages/DiscussionsPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="schedule" element={<Schedule />} />
               <Route path="buzz" element={<Firehose />} />
               <Route path="news" element={<News />} />
+              <Route path="chatroom" element={<DiscussionsPage />} />
 
               {/* Match detail pages */}
               <Route
