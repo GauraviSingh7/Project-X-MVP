@@ -5,6 +5,8 @@ import { ArrowLeft, Trophy, MapPin, Activity } from 'lucide-react';
 import { useMatchDetail } from '@/hooks/use-cricket-data';
 import LoadingState from '@/components/LoadingState';
 import ErrorState from '@/components/ErrorState';
+import HighlightsContainer from "@/components/highlights/HighlightsContainer";
+
 
 /* ================== HELPERS ================== */
 
@@ -338,6 +340,7 @@ export default function ResultMatchDetail() {
 
       </div>
       {/* Footer will naturally follow here because the main wrapper is not fixed/absolute */}
+       <HighlightsContainer highlightsUrl={match.highlights_url} />
     </div>
   );
 }
