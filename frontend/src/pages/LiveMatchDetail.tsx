@@ -1,10 +1,12 @@
+// frontend/src/pages/LiveMatchDetail.tsx
+
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   useMatchDetail,
   useCommentary,
   useDiscussions,
-  useLiveScores
+  useLiveScores,
 } from "@/hooks/use-cricket-data";
 import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
@@ -53,59 +55,43 @@ export default function LiveMatchDetail() {
     );
   }
 
-  /* ---------------- DATA DERIVATION ---------------- */
+  /* ---------------- DATA DERIVATION (FIXED) ---------------- */
 
   const scorecard = match.scorecard ?? [];
   const richInning = scorecard[scorecard.length - 1];
 
-  // 🔑 Find matching live match from /livescore endpoint
-  const liveScoreMatch = liveScores?.find(
-    (m: any) => String(m.match_id) === String(matchIdNum)
-  );
-
-  let battingTeamName = "Team A";
-  let opponentTeamName = "Team B";
-
-  /**
-   * PRIMARY: Use /livescore as source of truth for team names
-   * This works for ALL match states (LIVE, DELAYED, NS, FINISHED)
-   */
-  if (liveScoreMatch?.teams) {
-    battingTeamName = liveScoreMatch.teams.batting_first?.name ?? battingTeamName;
-    opponentTeamName = liveScoreMatch.teams.batting_second?.name ?? opponentTeamName;
-  }
-
-  /**
-   * FALLBACK: If /livescore unavailable, use scorecard team names
-   * This handles edge cases where match might not be in livescore feed
-   */
-  else if (richInning?.team_name) {
-    const battingTeamId = richInning.team_id;
-    battingTeamName = richInning.team_name;
-
-    // Try to find opponent from scorecard
-    if (scorecard.length > 1) {
-      const opponentInning = scorecard.find(
-        inning => inning.team_id !== battingTeamId
-      );
-      if (opponentInning?.team_name) {
-        opponentTeamName = opponentInning.team_name;
-      }
-    }
-  }
-
   const battingTeamId = richInning?.team_id;
+  const battingTeamName = richInning?.team_name ?? "—";
+
+  // Find opponent inning if exists
   const opponentInning = scorecard.find(
     inning => inning.team_id !== battingTeamId
   );
 
-  const venue = match.venue;
-  const toss =
-    liveScoreMatch?.toss ??
-    match.toss ??
-    null;
+  // 🔑 Use /livescore ONLY to map team IDs → names
+  const liveScoreMatch = liveScores?.find(
+    (m: any) => String(m.match_id) === String(matchIdNum)
+  );
 
-  const pageTitle = `${battingTeamName ?? "Match"} | STRYKER`;
+  let opponentTeamName = "—";
+
+  if (liveScoreMatch?.teams && battingTeamId) {
+    const { batting_first, batting_second } = liveScoreMatch.teams;
+
+    opponentTeamName =
+      batting_first.id === battingTeamId
+        ? batting_second.name
+        : batting_first.name;
+  } else if (opponentInning?.team_name) {
+    opponentTeamName = opponentInning.team_name;
+  }
+
+  // ✅ Toss: ALWAYS trust /matches/{id}
+  const toss = match.toss ?? null;
+
+  const venue = match.venue;
+
+  const pageTitle = `${battingTeamName} | STRYKER`;
 
   return (
     <>
@@ -178,7 +164,7 @@ export default function LiveMatchDetail() {
 
             <p className="text-sm italic opacity-90">
               Toss:{" "}
-              {toss ? (
+              {toss?.won_by_team_id ? (
                 <>
                   {toss.won_by_team_id === battingTeamId
                     ? battingTeamName
@@ -235,7 +221,7 @@ export default function LiveMatchDetail() {
   );
 }
 
-/* ---------------- Sub Components ---------------- */
+/* ---------------- Sub Components (UNCHANGED) ---------------- */
 
 function CommentaryTab({ commentary }: { commentary: CommentaryBall[] }) {
   if (!commentary.length)
@@ -254,10 +240,16 @@ function CommentaryTab({ commentary }: { commentary: CommentaryBall[] }) {
 }
 
 function ScorecardTab({ scorecard }: { scorecard: any }) {
-  if (!scorecard?.batting) return <p className="text-center py-12 text-muted-foreground">Detailed scorecard pending...</p>;
+  if (!scorecard?.batting)
+    return (
+      <p className="text-center py-12 text-muted-foreground">
+        Detailed scorecard pending...
+      </p>
+    );
 
   return (
     <div className="space-y-8">
+      {/* Batting */}
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
         <div className="bg-muted/50 px-6 py-3 border-b">
           <h3 className="font-bold">{scorecard.team_name} Batting</h3>
@@ -294,6 +286,7 @@ function ScorecardTab({ scorecard }: { scorecard: any }) {
         </table>
       </div>
 
+      {/* Bowling */}
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
         <div className="bg-muted/50 px-6 py-3 border-b text-foreground">
           <h3 className="font-bold">Bowling Performance</h3>

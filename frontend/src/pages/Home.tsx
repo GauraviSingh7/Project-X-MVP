@@ -80,21 +80,25 @@ export default function Home() {
     return Array.isArray(liveScoresData) ? liveScoresData : [];
   }, [liveScoresData]);
 
+  const LIVE_PHASES = ["FIRST", "SECOND", "INNINGS_BREAK"];
+
   const featuredMatches = useMemo(() => {
     if (!Array.isArray(liveScoresData)) return [];
-    
-    const liveMatches = liveScoresData.filter((m: LiveScoreMatch) => m.match_status === 'LIVE');
-    const upcomingMatches = liveScoresData.filter((m: LiveScoreMatch) => m.match_status === 'NS');
-    
-    const featured = [...liveMatches];
-    const remaining = 3 - featured.length;
-    
-    if (remaining > 0) {
-      featured.push(...upcomingMatches.slice(0, remaining));
-    }
-    
-    return featured.slice(0, 3);
+
+    const liveMatches = liveScoresData.filter(
+      (m: LiveScoreMatch) =>
+        LIVE_PHASES.includes(m.innings_phase) ||
+        m.match_status?.includes("INNINGS")
+    );
+
+    const upcomingMatches = liveScoresData.filter(
+      (m: LiveScoreMatch) =>
+        m.match_status === "NS" && m.innings_phase === "NS"
+    );
+
+    return [...liveMatches, ...upcomingMatches].slice(0, 3);
   }, [liveScoresData]);
+
 
 
   const discussionsList = useMemo(() => {

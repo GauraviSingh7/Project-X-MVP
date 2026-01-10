@@ -40,9 +40,16 @@ export default function LiveScores() {
   const combinedMatches = useMemo<CombinedMatch[]>(() => {
     const matches: CombinedMatch[] = [];
 
+    const LIVE_PHASES = ["FIRST", "SECOND", "INNINGS_BREAK"];
+
     if (Array.isArray(liveScoresData)) {
       liveScoresData
-        .filter((m: LiveScoreMatch) => m.match_status === "LIVE")
+        .filter(
+          (m: LiveScoreMatch) =>
+            m.match_status !== "ABAN." &&
+            (LIVE_PHASES.includes(m.innings_phase) ||
+              m.match_status?.includes("INNINGS"))
+        )
         .forEach((m) => matches.push({ ...m, _type: "live" }));
     }
 

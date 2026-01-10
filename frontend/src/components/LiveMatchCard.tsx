@@ -1,118 +1,172 @@
 // frontend/src/components/LiveMatchCard.tsx
 
 import { Link } from "react-router-dom";
+import { MapPin } from "lucide-react";
 import { getTeamLogoUrl } from "@/lib/utils";
 import type { LiveScoreMatch } from "@/lib/types";
 
+const FALLBACK_STADIUM_IMAGE =
+  "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1600&q=80";
+
 interface LiveMatchCardProps {
-  match: LiveScoreMatch & { _type: 'live' };
+  match: LiveScoreMatch & { _type: "live" };
 }
 
 export default function LiveMatchCard({ match }: LiveMatchCardProps) {
   const team1 = match.teams.batting_first;
   const team2 = match.teams.batting_second;
-  
-  // Determine toss winner
-  const tossWinner = match.toss.won_by_team_id === team1.id ? team1 : team2;
-  const tossText = match.toss.won_by_team_id && match.toss.elected
-    ? `${tossWinner.name} won toss and elected to ${match.toss.elected}`
-    : null;
 
-  // Determine which team is batting based on current score
-  const currentBattingTeamId = match.scores.current?.team_id;
-  const isBattingFirst = currentBattingTeamId === team1.id;
-  
-  // Score logic
-  const team1Score = isBattingFirst 
-    ? match.scores.current 
-    : (match.innings_phase === 'FIRST_INNINGS' ? null : match.scores.first_innings);
-    
-  const team2Score = !isBattingFirst 
-    ? match.scores.current 
-    : (match.innings_phase === 'FIRST_INNINGS' ? null : match.scores.second_innings);
+  const tossWinner = match.toss.won_by_team_id === team1.id ? team1 : team2;
+  const tossText =
+    match.toss.won_by_team_id && match.toss.elected
+      ? `${tossWinner.name} won toss and elected to ${match.toss.elected}`
+      : null;
+
+  const battingTeamId =
+    match.scores.current?.batting_team_id ||
+    match.scores.current?.team_id;
+
+  const LIVE_PHASES = ["FIRST", "SECOND", "INNINGS_BREAK"];
+
+  const isLive =
+    LIVE_PHASES.includes(match.innings_phase) ||
+    match.match_status?.includes("INNINGS");
+
+  const getTeamScore = (teamId: number) => {
+    if (isLive && match.innings_phase === "FIRST") {
+      return battingTeamId === teamId
+        ? match.scores.current?.score
+        : "Yet to bat";
+    }
+
+    if (isLive && match.innings_phase === "INNINGS_BREAK") {
+      return match.scores.first_innings?.team_id === teamId
+        ? match.scores.first_innings.score
+        : "Yet to bat";
+    }
+
+    if (isLive && match.innings_phase === "SECOND") {
+      return battingTeamId === teamId
+        ? match.scores.current?.score
+        : match.scores.first_innings?.score;
+    }
+
+    return "—";
+  };
+
+  // UI-only helper (unchanged logic)
+  const getTeamOvers = (teamId: number) => {
+    if (
+      isLive &&
+      battingTeamId === teamId &&
+      match.scores.current?.overs
+    ) {
+      return ` (${match.scores.current.overs})`;
+    }
+    return "";
+  };
 
   const team1Logo = getTeamLogoUrl(team1);
   const team2Logo = getTeamLogoUrl(team2);
 
+  const stadiumImage =
+    match.venue?.image_path &&
+    match.venue.image_path.includes("/images/")
+      ? match.venue.image_path
+      : FALLBACK_STADIUM_IMAGE;
+
   return (
-    <Link 
+    <Link
       to={`/match/${match.match_id}`}
-      className="block bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-xl border-2 border-red-500 hover:border-red-600 transition-all p-6 shadow-lg hover:shadow-xl"
+      className="
+        group relative block overflow-hidden rounded-2xl
+        border-2 border-red-500
+        transition-all
+        animate-[liveBorderPulse_2.5s_ease-in-out_infinite]
+        hover:shadow-xl
+      "
     >
-      {/* Live Indicator */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600" />
-          </span>
-          <span className="text-red-600 dark:text-red-500 text-sm font-bold uppercase tracking-wider">
-            LIVE
-          </span>
-        </div>
-        <span className="text-xs text-gray-500">
-          {match.venue.city}
-        </span>
+      {/* BACKGROUND */}
+      <div className="absolute inset-0">
+        <img
+          src={stadiumImage}
+          alt={match.venue?.name ?? 'Cricket stadium'}
+          className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white/95 dark:from-black/70 dark:via-black/65 dark:to-black/80" />
       </div>
 
-      {/* Teams and Scores */}
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center mb-4">
-        {/* Team 1 */}
-        <div className="flex items-center gap-3">
-          {team1Logo ? (
-            <img 
-              src={team1Logo} 
+      {/* CONTENT */}
+      <div className="relative z-10 p-6 pt-8 text-foreground dark:text-white">
+        {/* LIVE BADGE */}
+        <div className="flex justify-center mb-4">
+          <span className="flex items-center gap-2 text-red-600 dark:text-red-400 font-black text-xs uppercase tracking-wider">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600" />
+            </span>
+            Live
+          </span>
+        </div>
+
+        {/* TEAMS */}
+        <div className="flex items-center justify-center gap-6">
+          {/* TEAM 1 */}
+          <div className="flex flex-col items-center gap-2 w-32 text-center">
+            <img
+              src={team1Logo ?? ""}
               alt={team1.name}
-              className="w-10 h-10 object-contain flex-shrink-0"
+              className="h-14 w-14 object-contain drop-shadow-md"
             />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
-              {team1.short_name || team1.code || '?'}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <span className="font-bold text-base leading-tight">
               {team1.name}
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {team1Score ? `${team1Score.score} (${team1Score.overs})` : 'Yet to bat'}
-            </p>
+            </span>
+            <span className="text-lg font-black text-muted-foreground/80">
+              {getTeamScore(team1.id)}
+              {getTeamOvers(team1.id)}
+            </span>
+          </div>
+
+          <span className="text-lg font-black text-muted-foreground/40">
+            VS
+          </span>
+
+          {/* TEAM 2 */}
+          <div className="flex flex-col items-center gap-2 w-32 text-center">
+            <img
+              src={team2Logo ?? ""}
+              alt={team2.name}
+              className="h-14 w-14 object-contain drop-shadow-md"
+            />
+            <span className="font-bold text-base leading-tight">
+              {team2.name}
+            </span>
+            <span className="text-lg font-black text-muted-foreground/80">
+              {getTeamScore(team2.id)}
+              {getTeamOvers(team2.id)}
+            </span>
           </div>
         </div>
 
-        {/* VS Divider */}
-        <div className="text-gray-400 font-bold text-lg px-2">VS</div>
-
-        {/* Team 2 */}
-        <div className="flex items-center gap-3 flex-row-reverse text-right">
-          {team2Logo ? (
-            <img 
-              src={team2Logo} 
-              alt={team2.name}
-              className="w-10 h-10 object-contain flex-shrink-0"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
-              {team2.short_name || team2.code || '?'}
+        {/* META */}
+        <div className="mt-5 text-center space-y-1">
+          {match.venue?.name && (
+            <div className="flex items-center justify-center gap-1 text-xs font-bold text-muted-foreground">
+              <MapPin className="h-3 w-3 stroke-[3]" />
+              <span>
+                {match.venue.name}
+                {match.venue.city ? `, ${match.venue.city}` : ""}
+              </span>
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {team2.name}
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {team2Score ? `${team2Score.score} (${team2Score.overs})` : 'Yet to bat'}
-            </p>
-          </div>
+
+          {tossText && (
+            <div className="text-xs font-bold text-muted-foreground/70">
+              {tossText}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Toss Info */}
-      {tossText && (
-        <div className="text-center text-sm text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 rounded-lg py-2 px-3">
-          {tossText}
-        </div>
-      )}
     </Link>
   );
 }

@@ -13,16 +13,43 @@ export default function TickerCard({
   getTeamLogoUrl,
   formatMatchTime,
 }: Props) {
-  const isLive = match.match_status === "LIVE";
-  const isFinished = match.match_status === "FINISHED";
+  /* ================= MATCH STATE ================= */
+
+  const LIVE_PHASES = ["FIRST", "SECOND", "INNINGS_BREAK"];
+
+  const isLive =
+    LIVE_PHASES.includes(match.innings_phase) ||
+    match.match_status?.includes("INNINGS");
+
+  const isFinished =
+    match.innings_phase === "COMPLETED" ||
+    match.match_status === "FINISHED";
+
   const isUpcoming = match.match_status === "NS";
   const isAbandoned = match.match_status === "ABAN.";
 
-  const team1 = match.teams.batting_first;
-  const team2 = match.teams.batting_second;
+  /* ================= TEAMS ================= */
+
+  const rawTeam1 = match.teams.batting_first;
+  const rawTeam2 = match.teams.batting_second;
+
+  const battingTeamId =
+    match.scores.current?.batting_team_id ||
+    match.scores.current?.team_id;
+
+  // 🔴 IMPORTANT: reorder teams so batting team is on top
+  const team1 =
+    isLive && battingTeamId === rawTeam2.id ? rawTeam2 : rawTeam1;
+
+  const team2 =
+    team1.id === rawTeam1.id ? rawTeam2 : rawTeam1;
+
+  /* ================= RESULT ================= */
 
   const team1Won = match.result?.includes(team1.name);
   const team2Won = match.result?.includes(team2.name);
+
+  /* ================= LINK ================= */
 
   const link = isFinished
     ? `/match/${match.match_id}/result`
@@ -30,8 +57,46 @@ export default function TickerCard({
     ? `/match/${match.match_id}/schedule`
     : `/match/${match.match_id}`;
 
-  // Wrapper switch: disable navigation for abandoned matches
   const Wrapper: any = isAbandoned ? "div" : Link;
+
+  /* ================= SCORE LOGIC ================= */
+
+  const getTeamScore = (teamId: number) => {
+    if (isUpcoming || isAbandoned) return "—";
+
+    // 1st innings → only batting team has score
+    if (isLive && match.innings_phase === "FIRST") {
+      return battingTeamId === teamId
+        ? match.scores.current?.score
+        : "Yet to bat";
+    }
+
+    // Innings break
+    if (isLive && match.innings_phase === "INNINGS_BREAK") {
+      return match.scores.first_innings?.team_id === teamId
+        ? match.scores.first_innings.score
+        : "Yet to bat";
+    }
+
+    // 2nd innings
+    if (isLive && match.innings_phase === "SECOND") {
+      return battingTeamId === teamId
+        ? match.scores.current?.score
+        : match.scores.first_innings?.score;
+    }
+
+    // Finished
+    if (isFinished) {
+      if (match.scores.first_innings?.team_id === teamId)
+        return match.scores.first_innings.score;
+      if (match.scores.second_innings?.team_id === teamId)
+        return match.scores.second_innings.score;
+    }
+
+    return "—";
+  };
+
+  /* ================= UI ================= */
 
   return (
     <Wrapper
@@ -65,7 +130,7 @@ export default function TickerCard({
 
       {/* Teams */}
       <div className="px-4 py-4 space-y-3">
-        {/* Team 1 */}
+        {/* Team 1 (batting team when live) */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3 min-w-0">
             <img
@@ -92,7 +157,7 @@ export default function TickerCard({
                 team1Won ? "text-white" : "text-gray-300"
               )}
             >
-              {match.scores.first_innings?.score ?? "—"}
+              {getTeamScore(team1.id)}
             </span>
           )}
         </div>
@@ -124,8 +189,7 @@ export default function TickerCard({
                 team2Won ? "text-white" : "text-gray-300"
               )}
             >
-              {match.scores.second_innings?.score ??
-                (isLive ? "Yet to bat" : "—")}
+              {getTeamScore(team2.id)}
             </span>
           )}
         </div>
@@ -136,11 +200,15 @@ export default function TickerCard({
         {isAbandoned && "Match Abandoned"}
         {isFinished && !isAbandoned && match.result}
         {isUpcoming && formatMatchTime(match.start_time)}
-        {isLive &&
-          (match.innings_phase === "FIRST_INNINGS"
-            ? "1st Innings"
-            : "2nd Innings")}
+        {isLive && (
+          <>
+            {match.match_status === "1ST INNINGS" && "1st Innings"}
+            {match.match_status === "2ND INNINGS" && "2nd Innings"}
+            {match.match_status === "INNINGS BREAK" && "Innings Break"}
+          </>
+        )}
       </div>
+
     </Wrapper>
   );
 }
