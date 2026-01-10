@@ -1,183 +1,246 @@
-// Mock Data for STRYKER - Phase 1 (Commentary, News, Discussions stay mocked)
-
-import type { NewsItem, DiscussionPost, CommentaryBall, FullScorecard } from './types';
+// Mock Data for STRYKER - Phase 1
+import type {
+  NewsItem,
+  DiscussionPost,
+  CommentaryBall,
+  FullScorecard,
+} from "./types";
 
 // =============================================================================
-// MOCK MATCHES (fallback for when API is unavailable)
+// MOCK MATCHES
 // =============================================================================
 
 export const mockMatchesFallback = [
   {
-    id: '66709',
-    tournament: 'Big Bash League',
-    matchType: 'T20',
-    venue: 'Sydney Showground Stadium',
-    status: 'LIVE' as const,
-    statusText: '2nd Innings',
+    id: "66709",
+    tournament: "Big Bash League",
+    matchType: "T20",
+    venue: "Sydney Showground Stadium",
+    status: "LIVE" as const,
+    statusText: "2nd Innings",
     startTime: new Date().toISOString(),
-    team1: { id: '54', name: 'Sydney Thunder', shortName: 'SYT' },
-    team2: { id: '52', name: 'Perth Scorchers', shortName: 'PS' },
+    team1: { id: "54", name: "Sydney Thunder", shortName: "SYT" },
+    team2: { id: "52", name: "Perth Scorchers", shortName: "PS" },
     innings: [],
-    importance: 'MEDIUM' as const,
+    importance: "MEDIUM" as const,
   },
 ];
 
 // =============================================================================
-// MOCK NEWS DATA (Phase 1 - Mocked)
-// =============================================================================
-
-export const mockNews: NewsItem[] = [
-  {
-    id: '1',
-    title: 'Kohli enters rare club with 50th ODI century',
-    summary: 'Virat Kohli joined Sachin Tendulkar as the only batsmen to score 50 ODI centuries, achieving the milestone against Australia in the World Cup quarter-final.',
-    source: 'ESPNcricinfo',
-    url: '#',
-    publishedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    category: 'news',
-  },
-  {
-    id: '2',
-    title: 'Analysis: Why Australia\'s bowling attack is the most complete in world cricket',
-    summary: 'With Starc, Hazlewood, and Cummins in form, we break down what makes this pace trio so effective in different conditions.',
-    source: 'The Cricket Monthly',
-    url: '#',
-    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    category: 'analysis',
-  },
-  {
-    id: '3',
-    title: 'BCCI announces squad for upcoming New Zealand tour',
-    summary: 'India has named a 16-member squad for the three-match ODI series against New Zealand, with Rohit Sharma returning as captain after missing the Australia tests.',
-    source: 'Cricbuzz',
-    url: '#',
-    publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    category: 'news',
-  },
-  {
-    id: '4',
-    title: 'Opinion: The case for including impact players in Test cricket',
-    summary: 'As T20 leagues innovate with new rules, should Test cricket adapt to survive? A controversial proposal examined.',
-    source: 'Wisden',
-    url: '#',
-    publishedAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-    category: 'opinion',
-  },
-  {
-    id: '5',
-    title: 'Root surpasses Cook to become England\'s all-time leading Test run scorer',
-    summary: 'Joe Root reached the milestone during the second Test against Bangladesh, ending the day on 12,473 runs.',
-    source: 'Sky Sports',
-    url: '#',
-    publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    category: 'news',
-  },
-];
-
-// =============================================================================
-// MOCK DISCUSSIONS DATA (Phase 1 - Mocked)
+// MOCK DISCUSSIONS (War Room vs Global - 10 Posts Each)
 // =============================================================================
 
 export const mockDiscussions: DiscussionPost[] = [
+  // --- MATCH DAY WAR ROOM (ID: 66709) ---
   {
-    id: '1',
-    matchId: '66709',
-    author: { name: 'CricketFan_NYC' },
-    content: 'Kohli is playing the innings of his life here. The way he\'s rotating strike and picking gaps is vintage. Reminds me of the 2016 World T20 knock against Australia.',
-    likes: 234,
-    replies: 45,
+    id: "w1",
+    matchId: "66709",
+    author: { name: "TacticalScout" },
+    content: "Starc's release point is slightly higher today. Looking for that extra bounce over the swing. Huge over coming up.",
+    likes: 48,
+    replies: 6,
+    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w2",
+    matchId: "66709",
+    author: { name: "LineAndLength" },
+    content: "Hazlewood's first spell: 4-1-12-0. The pressure he's building is exactly what's forcing these loose shots at the other end.",
+    likes: 89,
+    replies: 14,
+    createdAt: new Date(Date.now() - 9 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w3",
+    matchId: "66709",
+    author: { name: "PerthPower" },
+    content: "Cummins has gone to the cross-seam early. He's spotted some variable bounce on this Sydney surface.",
+    likes: 34,
+    replies: 2,
+    createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w4",
+    matchId: "66709",
+    author: { name: "WicketWizard" },
+    content: "Notice the mid-on is staying slightly wider for Starc. They are baiting the drive into the gap.",
+    likes: 22,
+    replies: 1,
+    createdAt: new Date(Date.now() - 7 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w5",
+    matchId: "66709",
+    author: { name: "AnalyticsAce" },
+    content: "Projected score is dropping. The Scorchers' middle-order needs to rotate strike better against the spin duo.",
+    likes: 56,
+    replies: 9,
+    createdAt: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w6",
+    matchId: "66709",
+    author: { name: "BowlFirst" },
+    content: "Humidity is rising. Expect the ball to start tailing in for the left-armers in the next 15 minutes.",
+    likes: 12,
+    replies: 3,
     createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
   },
   {
-    id: '2',
-    matchId: '66709',
-    author: { name: 'TestCricketPurist' },
-    content: 'Starc\'s slower balls have been incredible this tournament. His variation has evolved so much since 2019.',
-    likes: 89,
-    replies: 12,
-    createdAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+    id: "w7",
+    matchId: "66709",
+    author: { name: "FieldGenius" },
+    content: "That's a massive gap at cow corner. Scorchers are taking a huge risk with only one man back there.",
+    likes: 44,
+    replies: 4,
+    createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
   },
   {
-    id: '3',
-    author: { name: 'BayAreaCricket' },
-    content: 'Anyone else watching from California? It\'s 2 AM but absolutely worth it. This World Cup has been phenomenal.',
-    likes: 156,
-    replies: 67,
-    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    id: "w8",
+    matchId: "66709",
+    author: { name: "QuickSingle" },
+    content: "The running between wickets has been sloppy. Already three close calls. A run-out feels inevitable.",
+    likes: 31,
+    replies: 2,
+    createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
   },
   {
-    id: '4',
-    matchId: '66710',
-    author: { name: 'SydneySider' },
-    content: 'The SCG pitch is offering more turn than expected. Day 4 could be decisive if India can\'t restrict Australia\'s lead to under 200.',
+    id: "w9",
+    matchId: "66709",
+    author: { name: "DeathOverSpecialist" },
+    content: "Starc has two overs left. If they don't take him on now, the required rate will climb past 12.",
     likes: 67,
-    replies: 23,
-    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    replies: 8,
+    createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "w10",
+    matchId: "66709",
+    author: { name: "TacticalScout" },
+    content: "Absolute masterclass in yorker execution. Scorchers have effectively shut down the powerplay.",
+    likes: 92,
+    replies: 11,
+    createdAt: new Date(Date.now() - 1 * 60 * 1000).toISOString(),
+  },
+
+  // --- GLOBAL DISCUSSIONS (No matchId) ---
+  {
+    id: "g1",
+    author: { name: "CricketPhilosopher" },
+    content: "Is this the greatest Australian pace trio of all time? Starc, Cummins, and Hazlewood have a synergy that even McGrath/Gillespie struggled to match.",
+    likes: 412,
+    replies: 156,
+    createdAt: new Date(Date.now() - 300 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g2",
+    author: { name: "DataDork" },
+    content: "Analysis: Starc's strike rate in ICC tournaments is nearly 20% better than his career average. The ultimate big-game player.",
+    likes: 204,
+    replies: 32,
+    createdAt: new Date(Date.now() - 280 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g3",
+    author: { name: "TestMatchFanatic" },
+    content: "The death of the ODI format is exaggerated. The last three World Cups have provided the highest level of tactical complexity we've seen.",
+    likes: 188,
+    replies: 45,
+    createdAt: new Date(Date.now() - 260 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g4",
+    author: { name: "SpinDoctor" },
+    content: "Why are finger spinners struggling in the modern T20 game? We need to discuss the lack of drift in the current white-ball era.",
+    likes: 95,
+    replies: 22,
+    createdAt: new Date(Date.now() - 240 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g5",
+    author: { name: "AussieLegend" },
+    content: "Cummins’ captaincy transition has been flawless. Leading from the front with the ball while managing high-pressure fields is no small feat.",
+    likes: 320,
+    replies: 61,
+    createdAt: new Date(Date.now() - 220 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g6",
+    author: { name: "GlobalUmpire" },
+    content: "The DRS impact on the game has been mostly positive, but the 'Umpires Call' still creates too much ambiguity for the average viewer.",
+    likes: 150,
+    replies: 89,
+    createdAt: new Date(Date.now() - 200 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g7",
+    author: { name: "BattingCoach" },
+    content: "Kohli’s bottom-hand technique is a case study in power generation. Even as he ages, his ability to find gaps remains elite.",
+    likes: 540,
+    replies: 112,
+    createdAt: new Date(Date.now() - 180 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g8",
+    author: { name: "PitchInspector" },
+    content: "Drop-in pitches are making the game too predictable. We are losing the unique characteristics of historic venues like Perth and Adelaide.",
+    likes: 120,
+    replies: 34,
+    createdAt: new Date(Date.now() - 160 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g9",
+    author: { name: "T20Mercenary" },
+    content: "The franchise model is inevitably going to shorten the international calendar. Boards need to find a way to coexist with the private leagues.",
+    likes: 215,
+    replies: 97,
+    createdAt: new Date(Date.now() - 140 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "g10",
+    author: { name: "CricketPhilosopher" },
+    content: "The aesthetic beauty of a classic cover drive is the only thing keeping the soul of the game alive in this power-hitting era.",
+    likes: 890,
+    replies: 230,
+    createdAt: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
   },
 ];
 
 // =============================================================================
-// MOCK COMMENTARY DATA (Phase 1 - Mocked)
+// MOCK COMMENTARY DATA (Aussie Pace Focus)
 // =============================================================================
 
 export const mockCommentary: CommentaryBall[] = [
-  { id: '1', over: '43.6', ball: 6, runs: 1, isWicket: false, isBoundary: false, isSix: false, description: 'Kohli works it to deep midwicket for a single. India 241/4', timestamp: new Date().toISOString() },
-  { id: '2', over: '43.5', ball: 5, runs: 4, isWicket: false, isBoundary: true, isSix: false, description: 'FOUR! Kohli punches it through covers. Exquisite timing. The ball races away to the boundary.', timestamp: new Date().toISOString() },
-  { id: '3', over: '43.4', ball: 4, runs: 0, isWicket: false, isBoundary: false, isSix: false, description: 'Defended back to the bowler. Starc is testing Kohli with good length deliveries.', timestamp: new Date().toISOString() },
-  { id: '4', over: '43.3', ball: 3, runs: 1, isWicket: false, isBoundary: false, isSix: false, description: 'Worked away for a single to fine leg. Rahul on strike now.', timestamp: new Date().toISOString() },
-  { id: '5', over: '43.2', ball: 2, runs: 0, isWicket: false, isBoundary: false, isSix: false, description: 'Good length, angling in. Kohli shoulders arms, the ball goes past off stump.', timestamp: new Date().toISOString() },
-  { id: '6', over: '43.1', ball: 1, runs: 2, isWicket: false, isBoundary: false, isSix: false, description: 'Flicked off the pads to deep square leg. Easy two runs.', timestamp: new Date().toISOString() },
+  { id: "c1", over: "15.1", ball: 1, runs: 0, isWicket: false, isBoundary: false, isSix: false, 
+    description: "Starc from over the wicket. 148kph thunderbolt aimed at the toes. Blocked out by the batter, but that's a serious statement of intent.", timestamp: new Date().toISOString() },
+  { id: "c2", over: "15.2", ball: 2, runs: 0, isWicket: true, isBoundary: false, isSix: false, 
+    description: "OUT! THE STUMP IS OUT OF THE GROUND! Starc finds the late swing, zips through the gate of the set batter. Classic Mitchell Starc white-ball wizardry.", timestamp: new Date().toISOString() },
+  { id: "c3", over: "16.1", ball: 1, runs: 0, isWicket: false, isBoundary: false, isSix: false, 
+    description: "Cummins enters the fray. Immediate heavy length. Extracting bounce from a surface that looks dead to others. Incredible discipline.", timestamp: new Date().toISOString() },
+  { id: "c4", over: "17.4", ball: 4, runs: 1, isWicket: false, isBoundary: false, isSix: false, 
+    description: "Hazlewood at his metronomic best. Targeting that 5th-stump channel repeatedly. Batter eventually pushes one to deep point for a single.", timestamp: new Date().toISOString() },
+  { id: "c5", over: "18.2", ball: 2, runs: 0, isWicket: false, isBoundary: false, isSix: false, 
+    description: "Starc goes short. 151kph. Batter ducks under it, but that nearly took the helmet off. The Perth crowd is up and roaring.", timestamp: new Date().toISOString() },
 ];
 
 // =============================================================================
-// MOCK SCORECARD DATA (Phase 1 - Mocked)
+// API HOOKS / FUNCTIONS
 // =============================================================================
 
-export const mockScorecard: FullScorecard = {
-  innings: 1,
-  team: { id: 'aus', name: 'Australia', shortName: 'AUS' },
-  batting: [
-    { batsman: 'D Warner', dismissal: 'c Rahul b Bumrah', runs: 45, balls: 52, fours: 6, sixes: 1, strikeRate: 86.54 },
-    { batsman: 'T Head', dismissal: 'lbw b Shami', runs: 78, balls: 89, fours: 9, sixes: 2, strikeRate: 87.64 },
-    { batsman: 'M Labuschagne', dismissal: 'c Kohli b Jadeja', runs: 32, balls: 41, fours: 3, sixes: 0, strikeRate: 78.05 },
-    { batsman: 'S Smith', dismissal: 'b Bumrah', runs: 67, balls: 78, fours: 5, sixes: 1, strikeRate: 85.90 },
-    { batsman: 'M Marsh', dismissal: 'c Iyer b Kuldeep', runs: 23, balls: 28, fours: 2, sixes: 0, strikeRate: 82.14 },
-    { batsman: 'G Maxwell', dismissal: 'c Rahul b Shami', runs: 18, balls: 12, fours: 1, sixes: 2, strikeRate: 150.00 },
-    { batsman: 'A Carey (wk)', dismissal: 'not out', runs: 12, balls: 15, fours: 1, sixes: 0, strikeRate: 80.00 },
-    { batsman: 'P Cummins (c)', dismissal: 'c Jadeja b Bumrah', runs: 5, balls: 8, fours: 0, sixes: 0, strikeRate: 62.50 },
-    { batsman: 'M Starc', dismissal: 'run out (Jadeja)', runs: 3, balls: 5, fours: 0, sixes: 0, strikeRate: 60.00 },
-    { batsman: 'J Hazlewood', dismissal: 'not out', runs: 1, balls: 3, fours: 0, sixes: 0, strikeRate: 33.33 },
-    { batsman: 'A Zampa', dismissal: 'did not bat', runs: 0, balls: 0, fours: 0, sixes: 0, strikeRate: 0 },
-  ],
-  bowling: [
-    { bowler: 'J Bumrah', overs: '10.0', maidens: 2, runs: 48, wickets: 3, economy: 4.80, wides: 1, noBalls: 0 },
-    { bowler: 'M Shami', overs: '10.0', maidens: 1, runs: 56, wickets: 2, economy: 5.60, wides: 2, noBalls: 0 },
-    { bowler: 'R Jadeja', overs: '10.0', maidens: 0, runs: 52, wickets: 1, economy: 5.20, wides: 0, noBalls: 0 },
-    { bowler: 'K Yadav', overs: '10.0', maidens: 0, runs: 61, wickets: 1, economy: 6.10, wides: 1, noBalls: 1 },
-    { bowler: 'H Pandya', overs: '10.0', maidens: 0, runs: 64, wickets: 0, economy: 6.40, wides: 0, noBalls: 0 },
-  ],
-  extras: { byes: 2, legByes: 4, wides: 4, noBalls: 1, penalties: 0, total: 11 },
-  total: { runs: 287, wickets: 8, overs: '50.0' },
-  fallOfWickets: ['1-67 (Warner)', '2-132 (Labuschagne)', '3-178 (Head)', '4-218 (Marsh)', '5-245 (Maxwell)', '6-267 (Smith)', '7-278 (Cummins)', '8-284 (Starc)'],
-};
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// =============================================================================
-// MOCK API FUNCTIONS (Phase 1 - These will be replaced with real APIs later)
-// =============================================================================
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-export const fetchMockNews = async (): Promise<NewsItem[]> => {
-  await delay(400);
-  return mockNews;
-};
-
+/**
+ * Fetches discussions. 
+ * If matchId is provided, returns ONLY match-specific War Room posts.
+ * If matchId is omitted, returns ONLY Global community posts.
+ */
 export const fetchMockDiscussions = async (matchId?: string): Promise<DiscussionPost[]> => {
   await delay(300);
   if (matchId) {
-    return mockDiscussions.filter(d => d.matchId === matchId);
+    return mockDiscussions.filter((d) => d.matchId === matchId);
   }
-  return mockDiscussions;
+  // Return global posts (where matchId is undefined)
+  return mockDiscussions.filter((d) => !d.matchId);
 };
 
 export const fetchMockCommentary = async (_matchId: string): Promise<CommentaryBall[]> => {
@@ -188,4 +251,10 @@ export const fetchMockCommentary = async (_matchId: string): Promise<CommentaryB
 export const fetchMockScorecard = async (_matchId: string): Promise<FullScorecard> => {
   await delay(300);
   return mockScorecard;
+};
+
+export const fetchMockNews = async (): Promise<NewsItem[]> => {
+  await delay(400);
+  // Using the original news data if needed
+  return []; 
 };

@@ -52,6 +52,10 @@ async def fetch_and_store_news(db: Session):
                 "context": story.get("context"),
                 "story_type": story.get("storyType"),
                 "published_at": published_at,
+                "source_url": generate_cricbuzz_url(
+                    story.get("id"),
+                    story.get("hline")
+                ),
                 # match_id is left NULL for now unless we implement fuzzy matching later
             }
 
